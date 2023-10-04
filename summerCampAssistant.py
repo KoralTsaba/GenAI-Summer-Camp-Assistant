@@ -27,7 +27,7 @@ def send_message(msg):
     presence_penalty=0
     )
 
-    return response['choices'][0]["message"]["content"]+'\n\n'
+    return response['choices'][0]["message"]["content"]+'\n'
 
 # Template to prepare the prompt
 def create_prompt(type, msg):
@@ -49,12 +49,12 @@ def extract_vars(message):
     for name, age, number, email in matches:
         if name:
             camp_signup['name'] = name
-        if age:
-            camp_signup['age'] = int(age)
         if number:
             camp_signup['phone'] = number
         if email:
             camp_signup['email'] = email
+        if age:
+            camp_signup['age'] = int(age)
 
 #First provided the chat model a summery about GenAi camp
 init_prompt = create_prompt(INIT_PROMPT,genai_summer_camp_details)
@@ -80,10 +80,16 @@ while not finish_flag:
                     continue_flag = True
                     keys = f'{keys}, {key}'
             
-            if not continue_flag:
-                sign_up(camp_signup)
-            msg = send_message(f'generate for me a short message (max 30 words) which asks the parent for the following details {keys}')
-            
+            msg = send_message(f'generate a short message (max 30 words) which asks the parent for the following details {keys}')
+            if camp_signup['age'] and not 7 < camp_signup['age'] < 19:
+                msg = send_message(f'generate a short message (max 15 words) which explains that we are sorry but the ages are in range 6-18')
+                print(msg)
+                continue_flag = False
+                camp_signup = {'name': None, 'age': None, 'phone': None, 'email':None}
+            elif not continue_flag:
+                sign_up()
+
+        
     msg = send_message('generate a message for the client if he wants to continue (up to 20 words).explain the client that his answer must be YES or NO)')
 
     res = input(msg)
