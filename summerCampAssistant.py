@@ -10,6 +10,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.Model.list()
 
+# Create msg to gpt-3.5-turbo model with the relevant msg (prompt)
 def send_message(msg):
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
@@ -28,7 +29,7 @@ def send_message(msg):
 
     return response['choices'][0]["message"]["content"]+'\n\n'
 
-
+# Template to prepare the prompt
 def create_prompt(type, msg):
     return f"""
 {prompts[type]['begin']}
@@ -41,6 +42,7 @@ def sign_up():
     camp_signup = {'name': None, 'age': None, 'phone': None, 'email':None}
     print(send_message('Generate me a message that the sign up complete (max 15 words )'))
 
+# Extract vars from gpt model to camp_signup dictionary
 def extract_vars(message):
     pattern = r'name:\s*(\w+)\s*\n|age:\s*(\d+)\s*\n|number:\s*(\d+)\s*\n|email:\s*([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)'
     matches = re.findall(pattern, message)
@@ -54,9 +56,11 @@ def extract_vars(message):
         if email:
             camp_signup['email'] = email
 
+#First provided the chat model a summery about GenAi camp
 init_prompt = create_prompt(INIT_PROMPT,genai_summer_camp_details)
 send_message(init_prompt)
 
+#Main loop
 finish_flag = False
 while not finish_flag:
     continue_flag = True
